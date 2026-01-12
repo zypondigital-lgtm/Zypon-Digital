@@ -1,11 +1,20 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { ShoppingCart, CheckCircle2, Clock, MessageCircle, ArrowRight, ShieldCheck, Zap } from 'lucide-react';
-import { WHATSAPP_NUMBER, WHATSAPP_MESSAGE, BENEFITS, PAIN_POINTS } from './constants';
+import { 
+  ShoppingCart, CheckCircle2, Clock, MessageCircle, ArrowRight, 
+  ShieldCheck, Zap, Lock, Unlock, TrendingUp, BookOpen, 
+  AlertCircle, ChevronDown, UserCheck, Star, Sparkles, X 
+} from 'lucide-react';
+import { 
+  WHATSAPP_NUMBER, WHATSAPP_MESSAGE, BENEFITS, 
+  PAIN_POINTS, CATEGORIES, ROADMAP, FAQ, CHECKOUT_NAMES 
+} from './constants';
 import { CountdownTime } from './types';
 
 const App: React.FC = () => {
   const [timeLeft, setTimeLeft] = useState<CountdownTime>({ hours: 4, minutes: 0, seconds: 0 });
+  const [notification, setNotification] = useState<typeof CHECKOUT_NAMES[0] | null>(null);
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   // WhatsApp Redirect Handler
   const handleWhatsAppClick = useCallback(() => {
@@ -18,250 +27,346 @@ const App: React.FC = () => {
     const timer = setInterval(() => {
       setTimeLeft(prev => {
         let { hours, minutes, seconds } = prev;
-        if (seconds > 0) {
-          seconds--;
-        } else {
-          if (minutes > 0) {
-            minutes--;
-            seconds = 59;
-          } else {
-            if (hours > 0) {
-              hours--;
-              minutes = 59;
-              seconds = 59;
-            } else {
-              // Reset to 4 hours if it reaches zero to keep the urgency active
-              return { hours: 4, minutes: 0, seconds: 0 };
-            }
+        if (seconds > 0) seconds--;
+        else {
+          if (minutes > 0) { minutes--; seconds = 59; }
+          else {
+            if (hours > 0) { hours--; minutes = 59; seconds = 59; }
+            else return { hours: 4, minutes: 0, seconds: 0 };
           }
         }
         return { hours, minutes, seconds };
       });
     }, 1000);
-
     return () => clearInterval(timer);
   }, []);
 
+  // Checkout Notification Logic
+  useEffect(() => {
+    const showNotification = () => {
+      const randomIndex = Math.floor(Math.random() * CHECKOUT_NAMES.length);
+      setNotification(CHECKOUT_NAMES[randomIndex]);
+      setTimeout(() => setNotification(null), 5000);
+    };
+
+    const interval = setInterval(showNotification, 12000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
-    <div className="min-h-screen pb-20 md:pb-0">
-      {/* Header / Navbar */}
-      <header className="fixed top-0 left-0 right-0 z-50 glass border-b border-white/20">
+    <div className="min-h-screen pb-20 md:pb-0 grid-pattern overflow-x-hidden selection:bg-orange-500/30">
+      {/* Real-time Checkout Notification Pop-up */}
+      {notification && (
+        <div className="fixed bottom-24 left-4 md:bottom-8 md:left-8 z-[100] animate-notification">
+          <div className="glass-dark border border-orange-500/30 p-4 rounded-2xl shadow-[0_0_30px_rgba(249,115,22,0.2)] flex items-center gap-4 max-w-xs">
+            <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center shrink-0">
+              <UserCheck className="text-white w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-sm font-bold leading-tight"><span className="text-orange-500">{notification.name}</span> baru saja membeli!</p>
+              <p className="text-xs text-gray-400">{notification.city} • {notification.time}</p>
+            </div>
+            <button onClick={() => setNotification(null)} className="ml-2 text-gray-500 hover:text-white">
+              <X size={14} />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Background Glows */}
+      <div className="fixed top-0 left-0 w-full h-full pointer-events-none -z-10 overflow-hidden">
+        <div className="absolute top-[10%] -left-20 w-96 h-96 bg-orange-600/10 rounded-full blur-[120px]"></div>
+        <div className="absolute top-[60%] -right-20 w-96 h-96 bg-cyan-600/10 rounded-full blur-[120px]"></div>
+      </div>
+
+      {/* Header */}
+      <header className="fixed top-0 left-0 right-0 z-50 glass-dark border-b border-white/5">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-cyan-500 rounded-lg flex items-center justify-center">
-              <Zap className="text-white w-5 h-5" />
-            </div>
-            <span className="font-bold text-xl tracking-tight">DigitalKit<span className="text-cyan-500">.</span></span>
+            <Zap className="text-orange-500 w-6 h-6 fill-orange-500" />
+            <span className="font-black text-xl tracking-tighter italic uppercase">ZYPON<span className="text-orange-500"> DIGITAL</span></span>
           </div>
-          <button 
-            onClick={handleWhatsAppClick}
-            className="hidden md:flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-6 py-2 rounded-full font-semibold hover:shadow-lg transition-all"
-          >
-            Beli Sekarang
+          <button onClick={handleWhatsAppClick} className="hidden md:block bg-orange-500 hover:bg-orange-400 text-black px-6 py-2 rounded-xl font-black transition-all">
+            AMBIL PROMO 20K
           </button>
         </div>
       </header>
 
       {/* Hero Section */}
-      <section className="pt-32 pb-16 px-4 bg-gradient-to-b from-cyan-50 to-white overflow-hidden">
-        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center">
-          <div className="text-center md:text-left">
-            <div className="inline-block bg-cyan-100 text-cyan-600 px-4 py-1 rounded-full text-sm font-bold mb-6 animate-bounce">
-              🔥 SPECIAL PROMO TERBATAS!
+      <section className="pt-32 pb-20 px-4">
+        <div className="max-w-6xl mx-auto text-center">
+          <div className="inline-flex items-center gap-4 px-6 py-2 rounded-full border-2 border-orange-500 bg-black/50 mb-8 animate-pulse">
+            <AlertCircle className="text-orange-500 w-5 h-5" />
+            <span className="text-sm md:text-lg font-black tracking-widest italic uppercase">ZYPON <span className="text-orange-500">DIGITAL</span></span>
+          </div>
+
+          <h1 className="text-5xl md:text-8xl font-black uppercase leading-[0.9] mb-6 tracking-tighter italic">
+            STOP JUALAN WAKTU.<br />
+            <span className="text-orange-500 text-glow-orange">MULAI JUALAN ASET.</span>
+          </h1>
+
+          <p className="text-lg md:text-2xl font-bold text-gray-400 max-w-3xl mx-auto mb-10 leading-snug">
+            Cuma modal Rp 20rb, dapet 1500+ produk digital siap jual. <span className="text-white underline decoration-orange-500">Ubah HP lo jadi mesin duit</span> mulai hari ini!
+          </p>
+
+          <div className="flex flex-wrap justify-center gap-4 mb-16">
+            <div className="glass-dark border border-white/10 px-6 py-3 rounded-2xl flex items-center gap-3">
+              <CheckCircle2 className="text-green-500" /> <span className="font-bold">Tanpa Stok Barang</span>
             </div>
-            <h1 className="text-4xl md:text-6xl font-extrabold leading-tight mb-6">
-              Modal 20 Ribu, Dapet <span className="text-gradient">1500+ Produk Digital</span> Siap Cuan! 🚀
-            </h1>
-            <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-              Ga perlu skill dewa, ga perlu stok barang. Kita bimbing sampe kamu paham cara jualannya. Cocok buat mahasiswa & karyawan yang butuh cuan tambahan!
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-              <button 
-                onClick={handleWhatsAppClick}
-                className="group flex items-center justify-center gap-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-xl hover:scale-105 active:scale-95 transition-all"
-              >
-                🔥 AKSES SEKARANG (Rp 20.000)
-                <ArrowRight className="group-hover:translate-x-1 transition-transform" />
-              </button>
+            <div className="glass-dark border border-white/10 px-6 py-3 rounded-2xl flex items-center gap-3">
+              <CheckCircle2 className="text-green-500" /> <span className="font-bold">Keuntungan 100%</span>
             </div>
-            <div className="mt-6 flex items-center justify-center md:justify-start gap-4 text-sm text-gray-500">
-              <span className="flex items-center gap-1"><CheckCircle2 className="w-4 h-4 text-green-500" /> Akses Selamanya</span>
-              <span className="flex items-center gap-1"><CheckCircle2 className="w-4 h-4 text-green-500" /> Bimbingan 1-on-1</span>
+            <div className="glass-dark border border-white/10 px-6 py-3 rounded-2xl flex items-center gap-3">
+              <CheckCircle2 className="text-green-500" /> <span className="font-bold">Mentor Bimbingan</span>
             </div>
           </div>
-          <div className="relative">
-            <div className="absolute -inset-4 bg-gradient-to-r from-cyan-400 to-blue-400 rounded-3xl blur-2xl opacity-20 animate-pulse"></div>
-            <img 
-              src="https://picsum.photos/seed/digital-kit/800/600" 
-              alt="Digital Product Mockup" 
-              className="relative rounded-3xl shadow-2xl border-4 border-white transform hover:rotate-1 transition-transform duration-500"
-            />
-            {/* Floating Badges */}
-            <div className="absolute -top-4 -right-4 glass p-4 rounded-2xl shadow-lg border border-white/50 animate-float">
-              <p className="text-2xl font-bold text-cyan-600">1500++</p>
-              <p className="text-xs font-semibold text-gray-500">Ebook Premium</p>
+
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+             <div className="relative group">
+                <div className="absolute -inset-2 bg-gradient-to-r from-orange-500 to-cyan-500 rounded-[40px] blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+                <div className="relative glass-dark p-8 rounded-[40px] border border-white/10">
+                   <div className="flex justify-between items-start mb-10">
+                      <div className="p-4 bg-orange-500/20 rounded-2xl border border-orange-500/30">
+                         <Unlock className="w-10 h-10 text-orange-500" />
+                      </div>
+                      <div className="text-right">
+                         <p className="text-xs font-black text-gray-500 uppercase">Status Akses</p>
+                         <p className="text-green-500 font-bold">READY TO UNLOCK</p>
+                      </div>
+                   </div>
+                   <div className="space-y-6 text-left">
+                      <div className="flex items-center gap-4">
+                         <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center font-black text-orange-500 border border-white/10">01</div>
+                         <div>
+                            <p className="font-black uppercase italic">1500++ Vault Ebook</p>
+                            <p className="text-xs text-gray-500">Niche: Bisnis, Crypto, Design, Diet, dll.</p>
+                         </div>
+                      </div>
+                      <div className="flex items-center gap-4">
+                         <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center font-black text-orange-500 border border-white/10">02</div>
+                         <div>
+                            <p className="font-black uppercase italic">Master Mentoring</p>
+                            <p className="text-xs text-gray-500">Strategi jualan 0 - 100jt per bulan.</p>
+                         </div>
+                      </div>
+                      <div className="flex items-center gap-4">
+                         <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center font-black text-orange-500 border border-white/10">03</div>
+                         <div>
+                            <p className="font-black uppercase italic">Marketing Kit</p>
+                            <p className="text-xs text-gray-500">Banner, Copywriting, & Video Ads.</p>
+                         </div>
+                      </div>
+                   </div>
+                </div>
+             </div>
+
+             <div className="text-left space-y-8">
+                <h2 className="text-3xl md:text-5xl font-black uppercase italic leading-tight">
+                  Investasi <span className="text-orange-500 underline underline-offset-8">Sekali</span>, Cuan <span className="text-cyan-400">Berkali-kali</span>.
+                </h2>
+                <p className="text-gray-400 font-medium">
+                  Bayangkan kamu punya ribuan aset yang bisa dijual kapanpun tanpa modal tambahan lagi. Gak perlu ijazah, gak perlu interview kerja yang ribet.
+                </p>
+                <div className="p-6 bg-orange-500/5 border-l-4 border-orange-500 rounded-r-3xl">
+                   <p className="italic font-bold text-lg">"Gue mahasiswa, modal 20rb iseng beli. Eh seminggu kemudian udah dapet 1.5jt cuma dari jualan ulang ebook diet & bisnis. GOKIL!" - Rian (21th)</p>
+                </div>
+                <button onClick={handleWhatsAppClick} className="w-full bg-orange-500 hover:bg-orange-400 text-black py-6 rounded-3xl font-black text-xl shadow-[0_0_40px_rgba(249,115,22,0.4)] flex items-center justify-center gap-4 transition-all">
+                  🔥 KLIK UNTUK AKSES SEKARANG
+                </button>
+             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Comparison Table Section */}
+      <section className="py-24 px-4 bg-zinc-900/30">
+        <div className="max-w-5xl mx-auto text-center">
+          <h2 className="text-3xl md:text-5xl font-black uppercase italic mb-16">Pilih Jalur <span className="text-orange-500">Masa Depanmu</span></h2>
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="glass-dark p-10 rounded-[40px] border border-white/5 opacity-60">
+               <h3 className="text-2xl font-black mb-8 italic uppercase">Jalur Konvensional</h3>
+               <ul className="space-y-4 text-left">
+                  <li className="flex items-center gap-3 text-red-400"><X className="shrink-0" /> Kerja 8-10 jam per hari</li>
+                  <li className="flex items-center gap-3 text-red-400"><X className="shrink-0" /> Gaji pas-pasan (Fixed Income)</li>
+                  <li className="flex items-center gap-3 text-red-400"><X className="shrink-0" /> Berangkat pagi pulang malem</li>
+                  <li className="flex items-center gap-3 text-red-400"><X className="shrink-0" /> Gak punya waktu buat keluarga</li>
+               </ul>
+            </div>
+            <div className="neon-border-orange bg-black/60 p-10 rounded-[40px] relative">
+               <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-orange-500 text-black px-6 py-1 rounded-full font-black text-sm uppercase">REKOMENDASI</div>
+               <h3 className="text-2xl font-black mb-8 italic uppercase text-orange-500">Jalur Digital Kit</h3>
+               <ul className="space-y-4 text-left">
+                  <li className="flex items-center gap-3 text-cyan-400"><CheckCircle2 className="shrink-0" /> Kerja kapan aja sesuka hati</li>
+                  <li className="flex items-center gap-3 text-cyan-400"><CheckCircle2 className="shrink-0" /> Profit UNLIMITED (Skala Global)</li>
+                  <li className="flex items-center gap-3 text-cyan-400"><CheckCircle2 className="shrink-0" /> Sambil rebahan bisa dapet duit</li>
+                  <li className="flex items-center gap-3 text-cyan-400"><CheckCircle2 className="shrink-0" /> Aset digital jualan 24/7</li>
+               </ul>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Pain Points Section */}
-      <section className="py-20 px-4 bg-white">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl font-bold mb-12">Jujur deh, kamu pasti pernah ngerasain ini...</h2>
-          <div className="grid gap-6">
-            {PAIN_POINTS.map((point, index) => (
-              <div key={index} className="flex items-center gap-6 p-6 rounded-2xl bg-gray-50 border border-gray-100 hover:border-cyan-200 transition-colors group">
-                <span className="text-4xl group-hover:scale-110 transition-transform">{point.emoji}</span>
-                <p className="text-left text-lg font-medium text-gray-700">{point.text}</p>
-              </div>
-            ))}
-          </div>
-          <div className="mt-12 p-8 glass rounded-3xl border-2 border-dashed border-cyan-200">
-            <p className="text-xl font-semibold italic text-gray-600">
-              "Kalo jawaban kamu <span className="text-cyan-500">IYA</span>, berarti kamu ada di tempat yang tepat. Kita punya solusinya buat kamu!"
-            </p>
-          </div>
+      {/* Inside the Vault Section */}
+      <section className="py-24 px-4">
+        <div className="max-w-7xl mx-auto">
+           <div className="text-center mb-20">
+              <h2 className="text-4xl md:text-6xl font-black italic uppercase tracking-tighter mb-4">ISI <span className="text-orange-500">BRANKAS</span> DIGITAL</h2>
+              <p className="text-gray-400 font-bold uppercase tracking-widest">Ribuan Niche Siap Jual - 100% Hak Milik Kamu</p>
+           </div>
+           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              {CATEGORIES.map((cat, i) => (
+                <div key={i} className="glass-dark border border-white/10 p-4 rounded-2xl flex flex-col items-center justify-center text-center hover:border-orange-500 transition-colors group">
+                   <div className="w-10 h-10 bg-orange-500/10 rounded-xl mb-3 flex items-center justify-center group-hover:bg-orange-500 group-hover:text-black transition-colors">
+                      <Sparkles size={20} />
+                   </div>
+                   <span className="font-black text-[10px] md:text-xs uppercase italic">{cat}</span>
+                </div>
+              ))}
+           </div>
         </div>
       </section>
 
-      {/* Benefits Section */}
-      <section className="py-20 px-4 bg-slate-50 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-200 rounded-full blur-[100px] opacity-20 -mr-32 -mt-32"></div>
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-200 rounded-full blur-[100px] opacity-20 -ml-32 -mb-32"></div>
-        
-        <div className="max-w-7xl mx-auto relative">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-extrabold mb-4">Kenapa Harus Punya <span className="text-gradient">Digital Starter Kit</span>?</h2>
-            <p className="text-gray-600">Investasi receh, hasil kece. Ini yang bakal kamu dapetin:</p>
-          </div>
-          
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {BENEFITS.map((benefit, index) => (
-              <div key={index} className="glass p-8 rounded-3xl border border-white/50 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all">
-                <div className="text-4xl mb-6">{benefit.icon}</div>
-                <h3 className="text-xl font-bold mb-3">{benefit.title}</h3>
-                <p className="text-gray-600 text-sm leading-relaxed">{benefit.description}</p>
-              </div>
-            ))}
+      {/* Mentoring Roadmap Section */}
+      <section className="py-24 px-4 bg-orange-500/5 border-y border-white/5">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-4xl md:text-6xl font-black italic uppercase text-center mb-20 tracking-tighter">ROADMAP <span className="text-orange-500">CUAN</span> 10JT PERTAMA</h2>
+          <div className="grid md:grid-cols-4 gap-8">
+             {ROADMAP.map((item, i) => (
+               <div key={i} className="relative">
+                  <div className="text-8xl font-black text-white/5 absolute -top-10 left-0 leading-none">{item.step}</div>
+                  <div className="relative z-10 pt-10">
+                     <h4 className="text-2xl font-black italic uppercase text-orange-500 mb-4">{item.title}</h4>
+                     <p className="text-gray-400 font-medium leading-relaxed">{item.desc}</p>
+                  </div>
+               </div>
+             ))}
           </div>
         </div>
       </section>
 
       {/* Urgency Section */}
-      <section className="py-20 px-4 bg-gradient-to-r from-cyan-600 to-blue-700 text-white overflow-hidden relative">
+      <section className="py-24 px-4 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-t from-orange-600/20 to-transparent"></div>
         <div className="max-w-4xl mx-auto text-center relative z-10">
-          <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full mb-8">
-            <Clock className="w-5 h-5 animate-spin-slow" />
-            <span className="font-bold text-sm tracking-wider">KESEMPATAN TERAKHIR!</span>
-          </div>
-          <h2 className="text-3xl md:text-5xl font-extrabold mb-8 leading-tight">
-            Promo Harga 20k Hangus dalam waktu:
-          </h2>
+          <h2 className="text-4xl md:text-7xl font-black uppercase italic mb-10 leading-none">WAKTU TERUS <span className="text-red-500">BERJALAN...</span></h2>
           
-          <div className="grid grid-cols-3 gap-4 md:gap-8 mb-12 max-w-lg mx-auto">
-            <div className="bg-white text-blue-900 p-4 md:p-6 rounded-3xl shadow-2xl">
-              <span className="block text-3xl md:text-5xl font-black">{timeLeft.hours.toString().padStart(2, '0')}</span>
-              <span className="text-xs font-bold uppercase text-blue-500">Jam</span>
-            </div>
-            <div className="bg-white text-blue-900 p-4 md:p-6 rounded-3xl shadow-2xl">
-              <span className="block text-3xl md:text-5xl font-black">{timeLeft.minutes.toString().padStart(2, '0')}</span>
-              <span className="text-xs font-bold uppercase text-blue-500">Menit</span>
-            </div>
-            <div className="bg-white text-blue-900 p-4 md:p-6 rounded-3xl shadow-2xl">
-              <span className="block text-3xl md:text-5xl font-black">{timeLeft.seconds.toString().padStart(2, '0')}</span>
-              <span className="text-xs font-bold uppercase text-blue-500">Detik</span>
-            </div>
-          </div>
-
-          <div className="p-8 bg-white/10 rounded-3xl border border-white/20 mb-8">
-            <p className="text-2xl font-bold line-through opacity-50 mb-2">Harga Normal: Rp 199.000</p>
-            <p className="text-5xl font-black text-yellow-300 animate-pulse">CUMA RP 20.000!</p>
-          </div>
-
-          <button 
-            onClick={handleWhatsAppClick}
-            className="w-full md:w-auto bg-white text-blue-700 px-12 py-5 rounded-2xl font-black text-xl shadow-2xl hover:bg-yellow-300 hover:text-blue-900 transition-all flex items-center justify-center gap-4 mx-auto"
-          >
-            🔥 SAYA INGIN AKSES SEKARANG!
-          </button>
-          
-          <p className="mt-8 text-sm opacity-80 flex items-center justify-center gap-2">
-            <ShieldCheck className="w-4 h-4" /> Garansi akses aman & bimbingan sampai bisa.
-          </p>
-        </div>
-      </section>
-
-      {/* Social Proof Placeholder */}
-      <section className="py-20 px-4 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-16">Udah Banyak Yang <span className="text-gradient">Mulai Duluan</span>...</h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-gray-50 p-6 rounded-3xl border border-gray-100">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-12 h-12 rounded-full bg-cyan-200">
-                    <img src={`https://picsum.photos/seed/${i + 10}/100/100`} className="rounded-full" alt="avatar" />
-                  </div>
-                  <div>
-                    <h4 className="font-bold">Anak Muda Cuan {i}</h4>
-                    <div className="flex text-yellow-400">{'⭐'.repeat(5)}</div>
-                  </div>
-                </div>
-                <p className="text-gray-600 italic">"Gila sih ini, modal cuma 20rb tapi dapetnya aset sebanyak ini. Baru 3 hari jualan udah balik modal berkali-kali lipat!"</p>
+          <div className="grid grid-cols-3 gap-4 md:gap-8 mb-16 max-w-lg mx-auto">
+            {['hours', 'minutes', 'seconds'].map((unit) => (
+              <div key={unit} className="bg-black border-2 border-orange-500 p-6 rounded-[32px] shadow-[0_0_30px_rgba(249,115,22,0.3)]">
+                <span className="block text-4xl md:text-6xl font-black text-orange-500">
+                  {timeLeft[unit as keyof CountdownTime].toString().padStart(2, '0')}
+                </span>
+                <span className="text-[10px] font-black uppercase text-white/40 tracking-widest">{unit}</span>
               </div>
             ))}
           </div>
+
+          <div className="glass-dark border-4 border-dashed border-orange-500/50 p-12 rounded-[50px] mb-12 transform hover:scale-105 transition-transform">
+             <div className="mb-4">
+                <p className="text-xl font-bold line-through text-white/30 italic uppercase">HARGA NORMAL: Rp 199.000</p>
+                <div className="flex items-center justify-center gap-4">
+                   <p className="text-6xl md:text-8xl font-black text-orange-500 tracking-tighter">Rp 20.000</p>
+                </div>
+             </div>
+             <p className="text-cyan-400 font-black text-lg italic animate-pulse">DISKON GILA 90% KHUSUS HARI INI!</p>
+          </div>
+
+          <button onClick={handleWhatsAppClick} className="w-full bg-white text-black py-8 rounded-[32px] font-black text-2xl md:text-3xl shadow-[0_0_50px_rgba(255,255,255,0.2)] hover:bg-orange-500 transition-all uppercase italic flex items-center justify-center gap-4 group">
+            🚀 AMBIL SEKARANG SEBELUM NAIK!
+          </button>
+          
+          <div className="mt-8 flex flex-wrap justify-center gap-6 text-xs font-black uppercase tracking-widest text-gray-500">
+            <span className="flex items-center gap-2"><ShieldCheck size={16} className="text-green-500" /> Payment Aman</span>
+            <span className="flex items-center gap-2"><Lock size={16} className="text-cyan-500" /> Akses Privat</span>
+            <span className="flex items-center gap-2"><TrendingUp size={16} className="text-orange-500" /> Jaminan Bimbingan</span>
+          </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12 px-4">
-        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center">
-          <div>
-            <div className="flex items-center gap-2 mb-6">
-              <Zap className="text-cyan-400 w-6 h-6" />
-              <span className="font-bold text-2xl tracking-tight">DigitalKit<span className="text-cyan-400">.</span></span>
+      {/* FAQ Section */}
+      <section className="py-24 px-4 bg-zinc-900/50">
+        <div className="max-w-3xl mx-auto">
+          <h2 className="text-4xl font-black italic uppercase text-center mb-16">PERTANYAAN <span className="text-orange-500">UMUM</span></h2>
+          <div className="space-y-4">
+             {FAQ.map((item, i) => (
+               <div key={i} className="glass-dark rounded-2xl border border-white/5 overflow-hidden">
+                  <button 
+                    onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                    className="w-full p-6 text-left flex justify-between items-center hover:bg-white/5 transition-colors"
+                  >
+                    <span className="font-black italic uppercase tracking-tight">{item.q}</span>
+                    <ChevronDown className={`transition-transform duration-300 ${openFaq === i ? 'rotate-180' : ''}`} />
+                  </button>
+                  {openFaq === i && (
+                    <div className="p-6 pt-0 text-gray-400 font-medium leading-relaxed border-t border-white/5">
+                      {item.a}
+                    </div>
+                  )}
+               </div>
+             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Final Social Proof */}
+      <section className="py-24 px-4 text-center">
+         <div className="max-w-4xl mx-auto">
+            <div className="flex justify-center -space-x-4 mb-8">
+               {[...Array(5)].map((_, i) => (
+                 <img key={i} src={`https://i.pravatar.cc/150?u=${i}`} className="w-16 h-16 rounded-full border-4 border-zinc-950" alt="user" />
+               ))}
+               <div className="w-16 h-16 rounded-full border-4 border-zinc-950 bg-orange-500 flex items-center justify-center font-black text-black">10K+</div>
             </div>
-            <p className="text-gray-400 max-w-md">
-              Membantu ribuan pemuda Indonesia punya penghasilan mandiri dari produk digital. Gabung sekarang sebelum harga kembali normal.
+            <h3 className="text-2xl font-black uppercase italic mb-4">Gabung bersama 10.000+ member lainnya</h3>
+            <p className="text-gray-500 font-bold mb-10">Jangan biarkan peluang ini diambil orang lain. Masa depanmu ada di tanganmu sendiri.</p>
+            <div className="flex justify-center items-center gap-2 text-yellow-500 mb-12">
+               {[...Array(5)].map((_, i) => <Star key={i} fill="currentColor" size={24} />)}
+               <span className="text-white font-black ml-2 text-xl italic">4.9/5 Rating</span>
+            </div>
+         </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-black py-20 px-4 border-t border-white/10">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-10">
+          <div className="text-center md:text-left">
+            <div className="flex items-center justify-center md:justify-start gap-2 mb-4">
+              <Zap className="text-orange-500 w-8 h-8 fill-orange-500" />
+              <span className="font-black text-2xl tracking-tighter italic uppercase">ZYPON<span className="text-orange-500"> DIGITAL</span></span>
+            </div>
+            <p className="text-gray-500 max-w-sm font-medium">
+              Membangun kemandirian finansial pemuda Indonesia melalui produk digital berkualitas.
             </p>
           </div>
           <div className="text-center md:text-right">
-            <p className="text-sm text-gray-500 mb-4">&copy; 2024 Digital Starter Kit. All rights reserved.</p>
-            <div className="flex justify-center md:justify-end gap-6 text-gray-400">
-              <a href="#" className="hover:text-white">Privacy Policy</a>
-              <a href="#" className="hover:text-white">Terms of Service</a>
+            <p className="text-sm text-gray-600 font-bold mb-6 italic uppercase tracking-widest">© 2024 ZYPON DIGITAL. ALL RIGHTS RESERVED.</p>
+            <div className="flex justify-center md:justify-end gap-10 text-gray-500 font-bold text-[10px] uppercase tracking-[0.2em]">
+              <a href="#" className="hover:text-orange-500 transition-colors">Privacy Policy</a>
+              <a href="#" className="hover:text-orange-500 transition-colors">Terms of Use</a>
+              <a href="#" className="hover:text-orange-500 transition-colors">Contact</a>
             </div>
           </div>
         </div>
       </footer>
 
       {/* Sticky Mobile CTA */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-lg border-t border-gray-200 z-50 md:hidden">
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-black/80 backdrop-blur-xl border-t border-white/10 z-[60] md:hidden">
         <button 
           onClick={handleWhatsAppClick}
-          className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 text-white py-4 rounded-xl font-bold shadow-lg flex items-center justify-center gap-3 active:scale-95 transition-all"
+          className="w-full bg-orange-500 text-black py-5 rounded-2xl font-black shadow-[0_0_40px_rgba(249,115,22,0.4)] flex items-center justify-center gap-3 active:scale-95 transition-all uppercase italic text-lg"
         >
-          <MessageCircle className="w-5 h-5" />
-          AMBIL PROMO 20RB (WA)
+          <MessageCircle className="w-6 h-6 fill-black" />
+          AMBIL PROMO Rp 20rb (WA)
         </button>
       </div>
 
       <style>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-10px); }
-        }
-        .animate-float {
-          animation: float 3s ease-in-out infinite;
-        }
-        .animate-spin-slow {
-          animation: spin 3s linear infinite;
-        }
-        @keyframes spin {
+        @keyframes spin-slow {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
+        }
+        .animate-spin-slow {
+          animation: spin-slow 12s linear infinite;
         }
       `}</style>
     </div>
